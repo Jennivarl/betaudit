@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BetAudit — Privacy Policy</title>
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" href="/favicon.png" />
+<meta name="description" content="Privacy policy for BetAudit — the pre-trade resolution auditor and its Telegram bot." />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root { --cyan:#66cccc; --glow:rgba(102,204,204,0.7); --border:rgba(102,204,204,0.22); --dim:rgba(102,204,204,0.55); }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:#000; color:#d7f2f2; font-family:'Space Grotesk',sans-serif; line-height:1.65; padding:0 20px 100px; }
+  .grid { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;
+    background-image:linear-gradient(rgba(102,204,204,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(102,204,204,0.05) 1px,transparent 1px);
+    background-size:44px 44px; }
+  .wrap { max-width:780px; margin:0 auto; position:relative; z-index:1; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:24px 0; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:12px; }
+  .brand { font-weight:700; font-size:20px; color:var(--cyan); text-shadow:0 0 12px var(--glow); letter-spacing:.04em; }
+  .brand small { display:block; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); letter-spacing:.18em; }
+  nav a { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--dim); text-decoration:none; margin-left:20px; }
+  nav a:hover { color:var(--cyan); text-shadow:0 0 10px var(--glow); }
+  h1 { font-size:clamp(26px,4vw,38px); color:var(--cyan); text-shadow:0 0 22px var(--glow); margin:44px 0 6px; }
+  .updated { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--dim); margin-bottom:8px; }
+  h2 { font-size:18px; color:var(--cyan); margin:34px 0 10px; font-family:'JetBrains Mono',monospace; }
+  p,li { color:#bfe0e0; font-size:15px; }
+  ul { margin:8px 0 8px 22px; } li { margin:5px 0; }
+  a.inline { color:var(--cyan); text-decoration:underline; text-decoration-color:var(--border); }
+  code { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--cyan); background:rgba(102,204,204,.09); border:1px solid var(--border); border-radius:3px; padding:1px 6px; }
+  footer { margin-top:56px; padding-top:22px; border-top:1px solid var(--border); font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--dim); }
+  footer a { color:var(--dim); text-decoration:none; margin-right:18px; } footer a:hover { color:var(--cyan); }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="wrap">
+  <header>
+    <div class="brand">BetAudit<small>PRIVACY POLICY</small></div>
+    <nav>
+      <a href="/">app</a>
+      <a href="/docs/">docs</a>
+      <a href="https://github.com/Jennivarl/betaudit" target="_blank" rel="noreferrer">github</a>
+    </nav>
+  </header>
+
+  <h1>Privacy Policy</h1>
+  <div class="updated">Last updated: 23 July 2026</div>
+  <p>
+    BetAudit is a pre-trade resolution auditor for prediction markets, available as a web app, an
+    API/MCP service, and a Telegram bot (<code>@BetAuditBot</code>). This policy explains what the
+    service processes and why. It is intentionally minimal because the service is stateless by design.
+  </p>
+
+  <h2>What we process</h2>
+  <ul>
+    <li><strong>Market URLs you send</strong> — the Polymarket link you submit (via the site, API, or Telegram) so we can fetch and audit that market's public resolution rules.</li>
+    <li><strong>Telegram chat ID</strong> — when you use the bot, Telegram provides your chat ID so we can send the reply back. We do not read your contacts, profile, or other messages.</li>
+    <li><strong>Per-call audit record</strong> — for each audit we store the market URL, the computed risk score/verdict, oracle metadata, timestamp, and latency, to operate the service (usage metering, rate limiting, and the public activity feed). These records contain no personal content beyond the market URL you submitted.</li>
+  </ul>
+
+  <h2>What we do not do</h2>
+  <ul>
+    <li>We do not sell or share your data with advertisers.</li>
+    <li>We do not store your Telegram messages beyond the URL needed to run the audit.</li>
+    <li>We do not require an account, email, or wallet to use the bot or the web console.</li>
+  </ul>
+
+  <h2>Third-party services</h2>
+  <p>To produce an audit, a market URL is processed by:</p>
+  <ul>
+    <li><strong>Polymarket (Gamma API)</strong> — to read the market's public resolution rules and oracle state.</li>
+    <li><strong>OpenAI</strong> — the resolution text is sent to an LLM to identify rule mismatches. It is not used to train models via the API.</li>
+    <li><strong>OKX AI Marketplace</strong> — BetAudit is listed as an A2MCP service (Agent #6141); agent-to-agent calls are governed by OKX's terms.</li>
+    <li><strong>Render / Telegram</strong> — hosting and message delivery.</li>
+  </ul>
+
+  <h2>Retention</h2>
+  <p>Audit records are retained only as long as needed to operate the service (metering, abuse prevention, and the activity feed). Cached market/LLM results expire automatically within hours.</p>
+
+  <h2>Your choices</h2>
+  <p>You can stop using the service at any time. For the Telegram bot, simply stop messaging it or block it in Telegram. Questions or removal requests can be raised via the <a class="inline" href="https://github.com/Jennivarl/betaudit" target="_blank" rel="noreferrer">GitHub repository</a>.</p>
+
+  <footer>
+    <a href="/">app</a>
+    <a href="/docs/">docs</a>
+    <a href="https://github.com/Jennivarl/betaudit" target="_blank" rel="noreferrer">github</a>
+    <div style="margin-top:10px;">© 2026 BetAudit · OKX AI Marketplace #6141</div>
+  </footer>
+</div>
+</body>
+</html>
