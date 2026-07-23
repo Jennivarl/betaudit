@@ -1,0 +1,27 @@
+name: keep-alive
+
+# Render's free web service spins down after ~15 min idle, adding a ~30-60s
+# cold start to the next request. This pings /health every 10 min to keep the
+# BetAudit box warm so agent/marketplace calls stay fast.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping BetAudit /health
+        run: |
+          url="https://betaudit.onrender.com/health"
+          for i in 1 2 3; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "$url" || echo "000")
+            echo "attempt $i -> HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 25
+          done
+          echo "warning: health did not return 200 (cold start may still be warming)"
+          # Do not fail the run on a single cold-start miss.
+          exit 0

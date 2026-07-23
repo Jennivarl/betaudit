@@ -11,6 +11,12 @@ const GLASS = 'rgba(6,20,20,0.6)'
 const AMBER = '#f5a623'
 const CRIMSON = '#ff3a3a'
 
+// Real destinations (no dead links).
+const REPO_URL = 'https://github.com/Jennivarl/betaudit'
+const DOCS_URL = '/docs/'
+const API_DOCS_URL = '/api-docs'
+const EXAMPLE_MARKET = 'https://polymarket.com/market/new-rhianna-album-before-gta-vi-926'
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────
@@ -99,11 +105,20 @@ function Nav() {
         </div>
       </div>
 
-      {/* Nav links */}
+      {/* Nav links — all real destinations */}
       <nav style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
-        {['docs', 'registry', 'marketplace', 'sdk'].map((link) => (
-          <a key={link} href="#" className="nav-link">
-            [ {link} ]
+        {[
+          { label: 'docs', href: DOCS_URL, external: false },
+          { label: 'api', href: API_DOCS_URL, external: false },
+          { label: 'github', href: REPO_URL, external: true },
+        ].map((l) => (
+          <a
+            key={l.label}
+            href={l.href}
+            className="nav-link"
+            {...(l.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+          >
+            [ {l.label} ]
           </a>
         ))}
       </nav>
@@ -571,8 +586,8 @@ function CrossChainBridge() {
         </linearGradient>
       </defs>
 
-      {/* On-chain stream */}
-      <text x="10" y="45" fill={CYAN} fontSize="8" fontFamily="JetBrains Mono" opacity="0.7">ON-CHAIN</text>
+      {/* Binding-rules stream */}
+      <text x="10" y="45" fill={CYAN} fontSize="8" fontFamily="JetBrains Mono" opacity="0.7">RULES</text>
       <rect x="10" y="52" width="75" height="18" rx="2" fill="none" stroke={CYAN} strokeWidth="0.8" opacity="0.4" />
       <rect x="10" y="52" width="75" height="18" rx="2" fill="url(#streamGrad1)" opacity="0.15" />
       {[0, 1, 2].map((i) => (
@@ -580,8 +595,8 @@ function CrossChainBridge() {
           style={{ animation: `streamParticle 2s linear infinite`, animationDelay: `${i * 0.6}s` }} />
       ))}
 
-      {/* Off-chain stream */}
-      <text x="115" y="45" fill="#f5a623" fontSize="8" fontFamily="JetBrains Mono" opacity="0.7">OFF-CHAIN</text>
+      {/* Headline-thesis stream */}
+      <text x="115" y="45" fill="#f5a623" fontSize="8" fontFamily="JetBrains Mono" opacity="0.7">THESIS</text>
       <rect x="115" y="52" width="75" height="18" rx="2" fill="none" stroke="#f5a623" strokeWidth="0.8" opacity="0.4" />
       <rect x="115" y="52" width="75" height="18" rx="2" fill="url(#streamGrad2)" opacity="0.15" />
       {[0, 1, 2].map((i) => (
@@ -602,8 +617,8 @@ function CrossChainBridge() {
       <line x1="140" y1="80" x2="100" y2="100" stroke="#ff3a3a" strokeWidth="0.8" strokeDasharray="3 2" opacity="0.6" />
 
       {/* Bottom stream arrows */}
-      <text x="10" y="140" fill={CYAN} fontSize="7" fontFamily="JetBrains Mono" opacity="0.5">UMA_ORACLE</text>
-      <text x="120" y="140" fill="#f5a623" fontSize="7" fontFamily="JetBrains Mono" opacity="0.5">SEC_EDGAR_API</text>
+      <text x="10" y="140" fill={CYAN} fontSize="7" fontFamily="JetBrains Mono" opacity="0.5">RESOLUTION_TEXT</text>
+      <text x="128" y="140" fill="#f5a623" fontSize="7" fontFamily="JetBrains Mono" opacity="0.5">HEADLINE</text>
 
       <path d="M40 125 L40 130 L100 130 L100 125" stroke={CYAN} strokeWidth="0.8" fill="none" opacity="0.4" />
       <path d="M160 125 L160 130 L100 130" stroke="#f5a623" strokeWidth="0.8" fill="none" opacity="0.4" />
@@ -633,7 +648,7 @@ function StressTests() {
             marginBottom: 12,
           }}
         >
-          // RESOLUTION_STRESS_TESTS
+          // HOW_IT_WORKS
         </div>
         <h2
           style={{
@@ -644,7 +659,7 @@ function StressTests() {
             textShadow: `0 0 20px ${CYAN_GLOW}`,
           }}
         >
-          Active Simulation Modules
+          How BetAudit Audits a Market
         </h2>
       </div>
 
@@ -655,20 +670,20 @@ function StressTests() {
           gap: 24,
         }}
       >
-        <SonarWidget title="Timeline Verifier" label="MODULE_01 :: TEMPORAL_ANALYSIS">
+        <SonarWidget title="1 · Read the real rules" label="STEP_01 :: POLYMARKET_GAMMA">
           <TimelineSonar />
         </SonarWidget>
 
-        <SonarWidget title="Semantic Parser" label="MODULE_02 :: NLP_RISK_SCORING" color="#f5a623">
+        <SonarWidget title="2 · Audit the clauses" label="STEP_02 :: LLM_GROUNDED" color="#f5a623">
           <SemanticParser />
         </SonarWidget>
 
-        <SonarWidget title="Cross-Chain Bridge" label="MODULE_03 :: DATA_STREAM_DELTA" color={CYAN}>
+        <SonarWidget title="3 · Score the gap" label="STEP_03 :: RULES_VS_THESIS" color={CYAN}>
           <CrossChainBridge />
         </SonarWidget>
       </div>
 
-      {/* Descriptions */}
+      {/* Descriptions — accurate to what the engine actually does */}
       <div
         style={{
           display: 'grid',
@@ -679,15 +694,15 @@ function StressTests() {
       >
         {[
           {
-            label: 'Detecting time-based oracle manipulation. Cross-references UMA timestamps against real-world news APIs for deadline drift.',
+            label: "Pulls the market's real resolution criteria, oracle type, challenge window, and live oracle state straight from Polymarket's Gamma API.",
             color: CYAN,
           },
           {
-            label: "Parsing 'fine-print' qualifiers that break automated settlements. Maps resolution text to probabilistic risk scores.",
+            label: 'An LLM reads the exact resolution text and surfaces concrete mismatches between the binding rules and a naive headline thesis.',
             color: '#f5a623',
           },
           {
-            label: 'Verifying off-chain real-world events. Highlights the delta gap where resolution traps are most likely to emerge.',
+            label: 'Returns a 0–100 resolution risk score and a PROCEED / CAUTION / ABORT_TRADE verdict — the gap between what the rules require and the headline read.',
             color: CYAN,
           },
         ].map(({ label, color }, i) => (
@@ -875,7 +890,7 @@ function ConsoleSection({ onSimRun }: { onSimRun?: boolean }) {
               letterSpacing: '0.1em',
             }}
           >
-            BetAudit :: Clerk_Simulation_v1 :: LIVE
+            BetAudit :: verify_resolution_rules :: LIVE
           </span>
         </div>
 
@@ -892,8 +907,29 @@ function ConsoleSection({ onSimRun }: { onSimRun?: boolean }) {
           }}
         >
           {logs.length === 0 && !running && (
-            <div style={{ color: 'rgba(102,204,204,0.25)', fontStyle: 'italic' }}>
-              // Awaiting simulation input...
+            <div style={{ color: 'rgba(102,204,204,0.45)' }}>
+              <div style={{ fontStyle: 'italic', color: 'rgba(102,204,204,0.3)' }}>
+                // Paste a Polymarket market URL below to run a live audit.
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <span style={{ opacity: 0.5 }}>try an example → </span>
+                <button
+                  onClick={() => setInput(EXAMPLE_MARKET)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: CYAN,
+                    cursor: 'pointer',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 12,
+                    textShadow: `0 0 8px ${CYAN_GLOW}`,
+                    padding: 0,
+                    textDecoration: 'underline',
+                  }}
+                >
+                  new-rhianna-album-before-gta-vi
+                </button>
+              </div>
             </div>
           )}
           {logs.map((log, i) => (
@@ -941,7 +977,7 @@ function ConsoleSection({ onSimRun }: { onSimRun?: boolean }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && runSim()}
-            placeholder="Paste_Polymarket_URL_here"
+            placeholder="Paste a Polymarket market URL and press Enter"
             disabled={running}
             style={{
               flex: 1,
@@ -1234,10 +1270,10 @@ function NodeGraph() {
 // ─── Footer ───────────────────────────────────────────────────────────────────
 function Footer() {
   const links = [
-    { label: '[ x.com ]', href: '#' },
-    { label: '[ telegram ]', href: '#' },
-    { label: '[ github ]', href: '#' },
-    { label: '[ api_status ]', href: '#' },
+    { label: '[ github ]', href: REPO_URL, external: true },
+    { label: '[ docs ]', href: DOCS_URL, external: false },
+    { label: '[ api ]', href: API_DOCS_URL, external: false },
+    { label: '[ health ]', href: '/health', external: false },
   ]
 
   return (
@@ -1269,12 +1305,18 @@ function Footer() {
             letterSpacing: '0.05em',
           }}
         >
-          // BetAudit_Consortium.xyz :: Pre-Trade Simulation Layer
+          // betaudit.onrender.com :: Pre-Trade Resolution Auditor
         </div>
 
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
-          {links.map(({ label, href }) => (
-            <a key={label} href={href} className="nav-link" style={{ fontSize: 12 }}>
+          {links.map(({ label, href, external }) => (
+            <a
+              key={label}
+              href={href}
+              className="nav-link"
+              style={{ fontSize: 12 }}
+              {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
+            >
               {label}
             </a>
           ))}
@@ -1288,7 +1330,7 @@ function Footer() {
             letterSpacing: '0.1em',
           }}
         >
-          © 2025 BetAudit :: MIT_LICENSE :: OKX_AI_MARKETPLACE_REGISTERED
+          © 2026 BetAudit :: MIT License :: OKX AI Marketplace · Agent #6141
         </div>
       </div>
     </footer>

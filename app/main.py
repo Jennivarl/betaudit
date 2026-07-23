@@ -79,10 +79,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Resolution Simulation Layer",
+    title="BetAudit — Pre-Trade Resolution Auditor",
     version=__version__,
     summary="Pre-trade compliance engine for prediction-market trading agents.",
     lifespan=lifespan,
+    # Swagger moves to /api-docs so the product docs site can own /docs.
+    docs_url="/api-docs",
+    redoc_url="/api-redoc",
 )
 
 

@@ -1,22 +1,24 @@
-# Resolution Simulation Layer
+# BetAudit — Pre-Trade Resolution Auditor
 
-A paid, machine-to-machine **pre-trade compliance engine** for prediction-market trading agents,
-built as an ASP for the OKX.AI Marketplace.
+> **A prediction-market bot is about to buy `YES` on a headline. BetAudit reads the market's
+> _real_ resolution rules first — and tells it to stop when a hidden clause would trap the trade.**
 
-An autonomous bot is about to buy `YES` on a headline. Before it does, it calls
-`POST /verify-resolution-rules` with the market URL. This service reads the market's *real*
-resolution rules, oracle metadata, and dispute terms, and returns a **0–100 Resolution Risk Score**
-plus a machine-actionable `action` (`PROCEED` / `CAUTION` / `ABORT_TRADE`) — so the bot aborts
-trades that are trapped by a clause it never read. A background monitor then watches the oracle and
-fires **post-trade dispute alerts**.
+Autonomous agents trade prediction markets on the headline. But a Polymarket market resolves on its
+**fine print** — an "Official SEC 8-K filing," an exact deadline, a specific oracle — not the news.
+BetAudit is a machine-to-machine ASP on the **OKX AI Marketplace** that closes that gap:
 
-## Status — Phase 7 (Redis + deploy-ready) — go-live pending
+give it a market URL → it reads the actual resolution criteria, UMA oracle state, and dispute terms
+→ it returns a **0–100 resolution risk score** and a verdict an agent acts on:
+**`PROCEED` / `CAUTION` / `ABORT_TRADE`**. Grounded in the rules, not the headline.
 
-Real end-to-end path against live Polymarket data, behind API-key auth with a
-per-call audit trail, an optional x402 payment gate, a post-trade oracle monitor,
-and a Redis performance/protection layer — fronted by the **BetAudit** web app
-whose Simulation Terminal and live feed call the real API. Packaged for Render
-(Docker + Postgres + Redis); registration on OKX is the remaining go-live step.
+**Live:** [betaudit.onrender.com](https://betaudit.onrender.com) · **Docs:** [/docs](https://betaudit.onrender.com/docs/) · **API:** [/api-docs](https://betaudit.onrender.com/api-docs) · **OKX:** A2MCP Agent #6141
+
+### 30-second tour
+- **Try it** — open the [live console](https://betaudit.onrender.com), click the example, watch a real market get audited.
+- **Two ways to call it** — REST (`POST /verify-resolution-rules`) for apps, MCP (`POST /mcp`, tool `verify_resolution_rules`) for OKX agents. Same engine.
+- **How the score is built** — resolve real rules (Polymarket Gamma) → LLM audits the clauses (grounded, temp 0) → explainable 0–100 score; degrades to a deterministic rubric with no LLM key.
+- **Production-grade** — API-key auth + per-call audit + metering, Redis caching/rate-limiting/live-feed, optional x402 pay-per-call, and a post-trade oracle monitor that fires dispute alerts.
+- **Deployed** — one Docker image (Node UI + Python API) on Render with managed Postgres + Redis.
 
 - `POST /verify-resolution-rules` and `GET /health`
 - Frozen response contract as Pydantic models (`app/schemas.py`)

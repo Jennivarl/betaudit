@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BetAudit — Docs</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --cyan: #66cccc; --glow: rgba(102,204,204,0.7); --border: rgba(102,204,204,0.22);
+    --dim: rgba(102,204,204,0.55); --amber: #f5a623; --crimson: #ff3a3a;
+    --glass: rgba(6,20,20,0.55); --bg: #000;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #000; color: #d7f2f2; font-family: 'Space Grotesk', sans-serif;
+    line-height: 1.65; padding: 0 20px 100px;
+  }
+  .grid {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.5;
+    background-image: linear-gradient(rgba(102,204,204,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(102,204,204,0.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; position: relative; z-index: 1; }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 12px;
+  }
+  .brand { font-weight: 700; font-size: 20px; color: var(--cyan); text-shadow: 0 0 12px var(--glow); letter-spacing: .04em; }
+  .brand small { display: block; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--dim); letter-spacing: .18em; }
+  nav a {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--dim);
+    text-decoration: none; margin-left: 20px;
+  }
+  nav a:hover { color: var(--cyan); text-shadow: 0 0 10px var(--glow); }
+  h1 { font-size: clamp(28px, 5vw, 42px); color: var(--cyan); text-shadow: 0 0 24px var(--glow); margin: 48px 0 12px; letter-spacing: -.01em; }
+  h2 {
+    font-size: 22px; color: var(--cyan); margin: 48px 0 14px; padding-top: 12px;
+    border-top: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; letter-spacing: .02em;
+  }
+  h2 .n { color: var(--dim); margin-right: 10px; }
+  h3 { font-size: 15px; color: #a9e0e0; margin: 24px 0 8px; font-family: 'JetBrains Mono', monospace; }
+  p, li { color: #bfe0e0; font-size: 15px; }
+  .lede { font-size: 18px; color: #d7f2f2; max-width: 640px; }
+  ul { margin: 10px 0 10px 22px; }
+  li { margin: 5px 0; }
+  a.inline { color: var(--cyan); text-decoration: underline; text-decoration-color: var(--border); }
+  a.inline:hover { text-shadow: 0 0 10px var(--glow); }
+  code {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--cyan);
+    background: rgba(102,204,204,0.09); border: 1px solid var(--border); border-radius: 3px; padding: 1px 6px;
+  }
+  pre {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7;
+    background: var(--glass); border: 1px solid var(--border); border-radius: 6px;
+    padding: 16px 18px; overflow-x: auto; margin: 14px 0; color: #c9eeee;
+    backdrop-filter: blur(8px);
+  }
+  pre .k { color: var(--amber); }
+  pre .s { color: #8fe3a0; }
+  pre .c { color: var(--dim); }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--cyan); font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .08em; }
+  td code { font-size: 12px; }
+  .badge {
+    display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--cyan); border: 1px solid var(--border); border-radius: 3px; padding: 2px 9px;
+    letter-spacing: .12em; margin: 2px 6px 2px 0; background: rgba(102,204,204,0.06);
+  }
+  .method { color: var(--amber); font-weight: 600; }
+  .card {
+    background: var(--glass); border: 1px solid var(--border); border-radius: 8px;
+    padding: 20px 22px; margin: 16px 0; backdrop-filter: blur(8px);
+  }
+  footer {
+    margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--dim);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  footer a { color: var(--dim); text-decoration: none; margin-right: 18px; }
+  footer a:hover { color: var(--cyan); }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="wrap">
+  <header>
+    <div class="brand">BetAudit<small>DOCS · PRE-TRADE RESOLUTION AUDITOR</small></div>
+    <nav>
+      <a href="/">app</a>
+      <a href="/api-docs">api reference</a>
+      <a href="https://github.com/Jennivarl/betaudit" target="_blank" rel="noreferrer">github</a>
+    </nav>
+  </header>
+
+  <h1>Audit the rules before you trade.</h1>
+  <p class="lede">
+    BetAudit is a pre-trade resolution auditor for autonomous prediction-market agents.
+    Give it a Polymarket market URL; it reads the market's <em>real</em> resolution rules,
+    oracle metadata, and dispute terms, and returns a 0&ndash;100 resolution risk score with a
+    machine-actionable verdict &mdash; <code>PROCEED</code>, <code>CAUTION</code>, or
+    <code>ABORT_TRADE</code> &mdash; so a bot never buys a market a hidden clause would trap.
+  </p>
+  <p style="margin-top:16px;">
+    <span class="badge">POLYMARKET · UMA</span>
+    <span class="badge">OKX A2MCP · AGENT #6141</span>
+    <span class="badge">REST + MCP</span>
+  </p>
+
+  <h2><span class="n">01</span>Quickstart</h2>
+  <p>Two calls: mint a demo key, then verify a market. The demo key route is public and rate-limited.</p>
+  <pre><span class="c"># 1. mint a demo API key</span>
+curl -X POST https://betaudit.onrender.com/demo/key
+<span class="c"># -> { "api_key": "rl_live_...", ... }  (shown once)</span>
+
+<span class="c"># 2. verify a market</span>
+curl -X POST https://betaudit.onrender.com/verify-resolution-rules \
+  -H <span class="s">"X-API-Key: rl_live_..."</span> \
+  -H <span class="s">"content-type: application/json"</span> \
+  -d <span class="s">'{"market_url":"https://polymarket.com/market/&lt;slug&gt;","queried_side":"YES"}'</span></pre>
+  <p>Prefer to click? Open the <a class="inline" href="/">live console</a> and paste a market URL &mdash; it auto-mints a key for you.</p>
+
+  <h2><span class="n">02</span>REST API</h2>
+  <table>
+    <tr><th>Method &amp; path</th><th>Auth</th><th>Purpose</th></tr>
+    <tr><td><span class="method">POST</span> <code>/demo/key</code></td><td>none</td><td>Mint a demo API key (IP rate-limited).</td></tr>
+    <tr><td><span class="method">POST</span> <code>/verify-resolution-rules</code></td><td><code>X-API-Key</code></td><td>Audit a market's resolution rules.</td></tr>
+    <tr><td><span class="method">GET</span> <code>/keys/me</code></td><td><code>X-API-Key</code></td><td>Your key's usage.</td></tr>
+    <tr><td><span class="method">GET</span> <code>/audit/logs</code></td><td><code>X-API-Key</code></td><td>Your call history.</td></tr>
+    <tr><td><span class="method">GET</span> <code>/health</code></td><td>none</td><td>Liveness.</td></tr>
+  </table>
+
+  <h3>Request</h3>
+  <pre>{
+  <span class="k">"market_url"</span>: <span class="s">"https://polymarket.com/market/&lt;slug&gt;"</span>,  <span class="c">// required</span>
+  <span class="k">"queried_side"</span>: <span class="s">"YES"</span>,        <span class="c">// optional, sharpens mismatch detection</span>
+  <span class="k">"subscribe_monitor"</span>: false   <span class="c">// optional, watch the oracle for disputes</span>
+}</pre>
+
+  <h3>Response</h3>
+  <pre>{
+  <span class="k">"resolution_risk_score"</span>: <span class="s">85</span>,             <span class="c">// 0-100</span>
+  <span class="k">"action"</span>: <span class="s">"ABORT_TRADE"</span>,               <span class="c">// PROCEED | CAUTION | ABORT_TRADE</span>
+  <span class="k">"parsed_contract_data"</span>: {
+    <span class="k">"oracle_type"</span>: <span class="s">"UMA_OOv2"</span>,
+    <span class="k">"challenge_window_hours"</span>: <span class="s">2.0</span>,
+    <span class="k">"source_of_truth_specified"</span>: <span class="s">"Official SEC 8-K Filing"</span>,
+    <span class="k">"current_oracle_state"</span>: <span class="s">"UNRESOLVED"</span>
+  },
+  <span class="k">"rule_mismatches_detected"</span>: [
+    { <span class="k">"clause"</span>: <span class="s">"..."</span>, <span class="k">"trader_thesis"</span>: <span class="s">"..."</span>, <span class="k">"conflict_reason"</span>: <span class="s">"..."</span> }
+  ],
+  <span class="k">"confidence"</span>: <span class="s">0.9</span>,
+  <span class="k">"summary"</span>: <span class="s">"ABORT_TRADE: resolution hinges on 'Official SEC 8-K Filing', not the headline."</span>
+  <span class="c">// + score_breakdown, citations, monitor, request_id, checked_at, schema_version</span>
+}</pre>
+
+  <div class="card">
+    <h3 style="margin-top:0">What the fields mean</h3>
+    <ul>
+      <li><code>resolution_risk_score</code> &mdash; how likely a naive headline trade is trapped (0 = rules match the obvious reading, 100 = the rules betray a headline trader).</li>
+      <li><code>action</code> &mdash; the three-way verdict an agent acts on. <code>&ge;70</code> aborts, <code>&ge;35</code> cautions, else proceeds.</li>
+      <li><code>parsed_contract_data</code> &mdash; the real oracle metadata read from the market.</li>
+      <li><code>rule_mismatches_detected</code> &mdash; concrete gaps between the binding rules and the naive thesis, grounded in the resolution text.</li>
+    </ul>
+  </div>
+
+  <h2><span class="n">03</span>MCP (for OKX agents)</h2>
+  <p>
+    BetAudit is registered on the OKX AI Marketplace as an A2MCP service (Agent #6141). Agents call it
+    over the Model Context Protocol at <code>POST /mcp</code> (JSON-RPC 2.0, Streamable HTTP) &mdash;
+    <code>initialize</code>, <code>tools/list</code>, and <code>tools/call</code>. It exposes one tool,
+    <code>verify_resolution_rules</code>, backed by the same engine as the REST API.
+  </p>
+  <pre><span class="c"># list tools</span>
+curl -X POST https://betaudit.onrender.com/mcp -H <span class="s">"content-type: application/json"</span> \
+  -d <span class="s">'{"jsonrpc":"2.0","id":1,"method":"tools/list"}'</span>
+
+<span class="c"># call the tool</span>
+curl -X POST https://betaudit.onrender.com/mcp -H <span class="s">"content-type: application/json"</span> \
+  -d <span class="s">'{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{
+       "name":"verify_resolution_rules",
+       "arguments":{"market_url":"https://polymarket.com/market/&lt;slug&gt;","queried_side":"YES"}}}'</span></pre>
+  <p>The tool returns a human-readable summary plus <code>structuredContent</code> (the full response above).</p>
+
+  <h2><span class="n">04</span>How the score is built</h2>
+  <ul>
+    <li><strong>Read the real rules</strong> &mdash; resolves the market via Polymarket's Gamma API for the resolution criteria, UMA oracle type, challenge window, and live oracle state.</li>
+    <li><strong>Audit the clauses</strong> &mdash; an LLM grounds strictly in the resolution text (temperature 0, forced structured output) to surface concrete rule mismatches. With no LLM key it falls back to a deterministic metadata rubric.</li>
+    <li><strong>Score the gap</strong> &mdash; every point traces to a named component in <code>score_breakdown</code>, so the number is always explainable.</li>
+  </ul>
+
+  <footer>
+    <div>
+      <a href="/">app</a>
+      <a href="/api-docs">api reference</a>
+      <a href="https://github.com/Jennivarl/betaudit" target="_blank" rel="noreferrer">github</a>
+    </div>
+    <div>© 2026 BetAudit · MIT License · OKX AI Marketplace #6141</div>
+  </footer>
+</div>
+</body>
+</html>
