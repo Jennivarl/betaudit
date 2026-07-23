@@ -68,7 +68,6 @@ function Nav() {
         background: 'rgba(0,0,0,0.85)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${CYAN_BORDER}`,
         padding: '0 32px',
         height: 64,
         display: 'flex',
@@ -1279,6 +1278,7 @@ function Footer() {
   return (
     <footer
       style={{
+        borderTop: `1px solid ${CYAN_BORDER}`,
         padding: '40px 32px',
         position: 'relative',
         zIndex: 1,
