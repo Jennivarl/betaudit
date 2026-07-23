@@ -1279,7 +1279,6 @@ function Footer() {
   return (
     <footer
       style={{
-        borderTop: `1px solid ${CYAN_BORDER}`,
         padding: '40px 32px',
         position: 'relative',
         zIndex: 1,

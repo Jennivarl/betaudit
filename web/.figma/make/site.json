@@ -1,8 +1,11 @@
 {
-  "title": "BetAudit — Pre-Trade Simulation Layer",
-  "description": "BetAudit: an AI-native pre-trade resolution auditor for autonomous prediction-market agents on the OKX AI Marketplace. Stress-test a market's real resolution rules before committing capital.",
+  "title": "BetAudit — Pre-Trade Resolution Auditor",
+  "description": "BetAudit reads a Polymarket market's real resolution rules, oracle state, and dispute terms before an agent trades it, and returns a 0-100 risk score with a PROCEED / CAUTION / ABORT_TRADE verdict. An A2MCP service on the OKX AI Marketplace.",
+  "openGraph": {
+    "image": "https://betauditmcp.xyz/og-image.png"
+  },
   "robots": {
-    "index": false
+    "index": true
   },
   "accessibility": {
     "addBypassLinks": false,
