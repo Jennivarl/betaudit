@@ -29,7 +29,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import __version__, mcp_server, redis_client
+from app import __version__, mcp_server, redis_client, telegram
 from app.api_models import (
     ApiKeyOut,
     CallLogOut,
@@ -41,7 +41,7 @@ from app.api_models import (
     SetWebhookRequest,
 )
 from app.config import get_settings
-from app.db import get_session, init_db, init_engine
+from app.db import get_session, get_sessionmaker, init_db, init_engine
 from app.engine import score_market
 from app.llm import get_parser
 from app.models import ApiKey
@@ -464,6 +464,84 @@ async def mcp_endpoint(request: Request, session: AsyncSession = Depends(get_ses
 
     return JSONResponse(
         mcp_server.rpc_error(rpc_id, mcp_server.METHOD_NOT_FOUND, f"Method not found: {method}")
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Telegram bot (Phase 6) — webhook on the existing service
+# --------------------------------------------------------------------------- #
+@app.post("/telegram/webhook", include_in_schema=False)
+async def telegram_webhook(request: Request):
+    settings = get_settings()
+    if not settings.telegram_bot_token:
+        return {"ok": True}  # bot not configured -> ignore
+    if settings.telegram_webhook_secret:
+        if (
+            request.headers.get("X-Telegram-Bot-Api-Secret-Token")
+            != settings.telegram_webhook_secret
+        ):
+            return JSONResponse({"ok": False}, status_code=403)
+    try:
+        update = await request.json()
+    except Exception:  # noqa: BLE001
+        return {"ok": True}
+    # Respond immediately; do the (slower) audit + reply in the background.
+    asyncio.create_task(handle_telegram_update(update))
+    return {"ok": True}
+
+
+async def handle_telegram_update(update: dict) -> None:
+    """Process one Telegram update: audit a market URL and reply in chat."""
+    settings = get_settings()
+    token = settings.telegram_bot_token
+    if not token:
+        return
+    msg = update.get("message") or update.get("edited_message") or {}
+    chat_id = (msg.get("chat") or {}).get("id")
+    text = (msg.get("text") or "").strip()
+    if chat_id is None:
+        return
+
+    if text.startswith("/start") or text.startswith("/help"):
+        await telegram.send_message(chat_id, telegram.WELCOME, token)
+        return
+
+    url = telegram.extract_market_url(text)
+    if not url:
+        await telegram.send_message(chat_id, telegram.PROMPT, token)
+        return
+
+    # Per-chat throttle (fail-open without Redis).
+    minute = datetime.now(timezone.utc).strftime("%Y%m%d%H%M")
+    count = await redis_client.incr_with_expiry(f"rate:tg:{chat_id}:{minute}", ttl=70)
+    if count is not None and count > settings.rate_limit_per_minute:
+        await telegram.send_message(chat_id, "Easy — one market a moment. Try again shortly.", token)
+        return
+
+    await telegram.send_chat_action(chat_id, "typing", token)
+    started = time.perf_counter()
+    maker = get_sessionmaker()
+    async with maker() as session:
+        try:
+            response, llm_used = await _resolve_score_monitor(
+                session,
+                market_url=url,
+                queried_side="YES",
+                subscribe_monitor=False,
+                api_key_id=None,
+            )
+        except (UnsupportedPlatformError, ResolverError) as exc:
+            await telegram.send_message(chat_id, f"⚠️ Couldn't audit that market: {exc}", token)
+            return
+        await _record_and_publish(
+            session,
+            response,
+            api_key_id=None,
+            llm_used=llm_used,
+            latency_ms=int((time.perf_counter() - started) * 1000),
+        )
+    await telegram.send_message(
+        chat_id, telegram.format_verdict(response, settings.public_base_url), token
     )
 
 

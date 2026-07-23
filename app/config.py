@@ -56,8 +56,10 @@ class Settings(BaseSettings):
     demo_key_enabled: bool = True
     demo_key_per_minute: int = 5              # per client IP
 
-    # Telegram (Phase 6)
+    # Telegram bot (Phase 6). Webhook mode on the existing web service.
     telegram_bot_token: str = ""
+    telegram_webhook_secret: str = ""   # verifies inbound webhook calls (optional)
+    public_base_url: str = "https://betauditmcp.xyz"  # for links in bot replies
 
 
 @lru_cache
