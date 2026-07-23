@@ -81,6 +81,26 @@ async def init_db() -> None:
     engine = get_engine()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    await _apply_additive_migrations(engine)
+
+
+# Small additive migrations for columns added after a table already exists in a
+# deployed DB (create_all never ALTERs existing tables). Each runs in its own
+# transaction and is ignored if already applied — safe and idempotent.
+_MIGRATIONS = [
+    "ALTER TABLE monitor_subscriptions ADD COLUMN telegram_chat_id VARCHAR",
+]
+
+
+async def _apply_additive_migrations(engine: AsyncEngine) -> None:
+    from sqlalchemy import text
+
+    for stmt in _MIGRATIONS:
+        try:
+            async with engine.begin() as conn:
+                await conn.execute(text(stmt))
+        except Exception:  # noqa: BLE001 - column already exists / dialect variance
+            pass
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:

@@ -50,6 +50,7 @@ async def create_subscription(
     api_key_id: int | None,
     market: ResolvedMarket,
     queried_side: str | None,
+    telegram_chat_id: str | None = None,
 ) -> MonitorSubscription:
     sub = MonitorSubscription(
         monitor_id=monitor_id,
@@ -59,6 +60,7 @@ async def create_subscription(
         market_url=market.market_url,
         queried_side=queried_side,
         last_oracle_state=market.current_oracle_state.value,
+        telegram_chat_id=telegram_chat_id,
     )
     session.add(sub)
     await session.commit()
@@ -85,6 +87,27 @@ async def list_subscriptions(
     stmt = stmt.limit(min(limit, 200)).offset(offset)
     result = await session.execute(stmt)
     return list(result.scalars().all())
+
+
+async def list_by_chat(
+    session: AsyncSession, telegram_chat_id: str, *, active_only: bool = True
+) -> list[MonitorSubscription]:
+    stmt = select(MonitorSubscription).where(
+        MonitorSubscription.telegram_chat_id == telegram_chat_id
+    )
+    if active_only:
+        stmt = stmt.where(MonitorSubscription.active.is_(True))
+    stmt = stmt.order_by(MonitorSubscription.created_at.desc())
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def deactivate_by_chat(session: AsyncSession, telegram_chat_id: str) -> int:
+    subs = await list_by_chat(session, telegram_chat_id, active_only=True)
+    for s in subs:
+        s.active = False
+    await session.commit()
+    return len(subs)
 
 
 async def list_events(
@@ -163,28 +186,49 @@ async def poll_all_active(session: AsyncSession) -> list[MonitorEvent]:
 async def _deliver(
     sub: MonitorSubscription, event: MonitorEvent, session: AsyncSession
 ) -> None:
-    """Best-effort webhook delivery. Failure is recorded, never raised."""
-    if not sub.webhook_url:
-        return
-    payload = {
-        "monitor_id": sub.monitor_id,
-        "market_url": sub.market_url,
-        "market_id": sub.market_id,
-        "queried_side": sub.queried_side,
-        "old_state": event.old_state,
-        "new_state": event.new_state,
-        "severity": event.severity,
-        "message": event.message,
-    }
-    timeout = get_settings().monitor_webhook_timeout_seconds
-    try:
-        async with httpx.AsyncClient(timeout=timeout) as client:
-            resp = await client.post(sub.webhook_url, json=payload)
-            resp.raise_for_status()
-        event.delivered = True
-    except Exception as exc:  # noqa: BLE001 - delivery must never break polling
-        event.delivered = False
-        event.delivery_error = str(exc)[:500]
+    """Best-effort delivery to the subscription's channels (Telegram + webhook).
+
+    Failures are recorded, never raised, so the poller never dies on delivery."""
+    settings = get_settings()
+    delivered = False
+    error: str | None = None
+
+    # Telegram push (if this subscription came from the bot).
+    if sub.telegram_chat_id and settings.telegram_bot_token:
+        try:
+            from app import telegram
+
+            await telegram.send_message(
+                sub.telegram_chat_id,
+                telegram.format_alert(sub, event),
+                settings.telegram_bot_token,
+            )
+            delivered = True
+        except Exception as exc:  # noqa: BLE001
+            error = f"telegram: {str(exc)[:200]}"
+
+    # Webhook (if configured).
+    if sub.webhook_url:
+        payload = {
+            "monitor_id": sub.monitor_id,
+            "market_url": sub.market_url,
+            "market_id": sub.market_id,
+            "queried_side": sub.queried_side,
+            "old_state": event.old_state,
+            "new_state": event.new_state,
+            "severity": event.severity,
+            "message": event.message,
+        }
+        try:
+            async with httpx.AsyncClient(timeout=settings.monitor_webhook_timeout_seconds) as client:
+                resp = await client.post(sub.webhook_url, json=payload)
+                resp.raise_for_status()
+            delivered = True
+        except Exception as exc:  # noqa: BLE001
+            error = f"webhook: {str(exc)[:200]}"
+
+    event.delivered = delivered
+    event.delivery_error = error
     await session.commit()
 
 

@@ -491,7 +491,7 @@ async def telegram_webhook(request: Request):
 
 
 async def handle_telegram_update(update: dict) -> None:
-    """Process one Telegram update: audit a market URL and reply in chat."""
+    """Process one Telegram update: audit / watch a market and reply in chat."""
     settings = get_settings()
     token = settings.telegram_bot_token
     if not token:
@@ -502,20 +502,95 @@ async def handle_telegram_update(update: dict) -> None:
     if chat_id is None:
         return
 
-    if text.startswith("/start") or text.startswith("/help"):
-        await telegram.send_message(chat_id, telegram.WELCOME, token)
+    msgkey = f"tg:msgs:{chat_id}"
+
+    async def reply(body: str) -> None:
+        # Send + remember the message id so /clear can delete it later.
+        mid = await telegram.send_message(chat_id, body, token)
+        if mid is not None:
+            await redis_client.list_push(msgkey, mid)
+
+    # /clear — delete the bot's own tracked messages in this chat.
+    if text.startswith("/clear"):
+        deleted = 0
+        for raw in await redis_client.list_pop_all(msgkey):
+            try:
+                if await telegram.delete_message(chat_id, int(raw), token):
+                    deleted += 1
+            except (ValueError, TypeError):
+                pass
+        if msg.get("message_id") is not None:
+            await telegram.delete_message(chat_id, msg["message_id"], token)
+        await reply(
+            f"🧹 Cleared {deleted} message(s). Send a Polymarket URL to start fresh."
+            if deleted
+            else "Nothing of mine to clear here yet."
+        )
         return
 
+    if text.startswith("/start") or text.startswith("/help"):
+        await reply(telegram.WELCOME)
+        return
+
+    # /watching must be checked before /watch (shared prefix).
+    if text.startswith("/watching"):
+        maker = get_sessionmaker()
+        async with maker() as session:
+            subs = await monitor_service.list_by_chat(session, str(chat_id))
+        if not subs:
+            await reply("You're not watching any markets. Use <code>/watch &lt;url&gt;</code>.")
+        else:
+            lines = ["<b>Watching:</b>"] + [
+                f"• {s.last_oracle_state} — <a href=\"{s.market_url}\">market</a>" for s in subs
+            ]
+            await reply("\n".join(lines))
+        return
+
+    if text.startswith("/unwatch"):
+        maker = get_sessionmaker()
+        async with maker() as session:
+            n = await monitor_service.deactivate_by_chat(session, str(chat_id))
+        await reply(f"🔕 Stopped watching {n} market(s)." if n else "You weren't watching anything.")
+        return
+
+    if text.startswith("/watch"):
+        url = telegram.extract_market_url(text)
+        if not url:
+            await reply("Usage: <code>/watch &lt;polymarket url&gt;</code>")
+            return
+        await telegram.send_chat_action(chat_id, "typing", token)
+        maker = get_sessionmaker()
+        async with maker() as session:
+            try:
+                market = await resolve_market(url, "YES")
+            except (UnsupportedPlatformError, ResolverError) as exc:
+                await reply(f"⚠️ Couldn't watch that market: {exc}")
+                return
+            await monitor_service.create_subscription(
+                session,
+                monitor_id=f"mon_{uuid.uuid4().hex[:12]}",
+                api_key_id=None,
+                market=market,
+                queried_side="YES",
+                telegram_chat_id=str(chat_id),
+            )
+        await reply(
+            f"🔔 Watching this market (now <b>{market.current_oracle_state.value}</b>). "
+            "I'll ping you here if the oracle disputes or resolves.\n"
+            f"<a href=\"{url}\">market</a>"
+        )
+        return
+
+    # Plain message: audit a URL, or prompt.
     url = telegram.extract_market_url(text)
     if not url:
-        await telegram.send_message(chat_id, telegram.PROMPT, token)
+        await reply(telegram.PROMPT)
         return
 
-    # Per-chat throttle (fail-open without Redis).
     minute = datetime.now(timezone.utc).strftime("%Y%m%d%H%M")
     count = await redis_client.incr_with_expiry(f"rate:tg:{chat_id}:{minute}", ttl=70)
     if count is not None and count > settings.rate_limit_per_minute:
-        await telegram.send_message(chat_id, "Easy — one market a moment. Try again shortly.", token)
+        await reply("Easy — one market a moment. Try again shortly.")
         return
 
     await telegram.send_chat_action(chat_id, "typing", token)
@@ -531,7 +606,7 @@ async def handle_telegram_update(update: dict) -> None:
                 api_key_id=None,
             )
         except (UnsupportedPlatformError, ResolverError) as exc:
-            await telegram.send_message(chat_id, f"⚠️ Couldn't audit that market: {exc}", token)
+            await reply(f"⚠️ Couldn't audit that market: {exc}")
             return
         await _record_and_publish(
             session,
@@ -540,9 +615,7 @@ async def handle_telegram_update(update: dict) -> None:
             llm_used=llm_used,
             latency_ms=int((time.perf_counter() - started) * 1000),
         )
-    await telegram.send_message(
-        chat_id, telegram.format_verdict(response, settings.public_base_url), token
-    )
+    await reply(telegram.format_verdict(response, settings.public_base_url))
 
 
 # --------------------------------------------------------------------------- #

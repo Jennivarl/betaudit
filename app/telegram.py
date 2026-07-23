@@ -27,6 +27,11 @@ WELCOME = (
     "and a verdict: <b>PROCEED</b> / <b>CAUTION</b> / <b>ABORT_TRADE</b>.\n\n"
     "Try one:\n"
     "<code>https://polymarket.com/market/new-rhianna-album-before-gta-vi-926</code>\n\n"
+    "<b>Commands</b>\n"
+    "• <code>/watch &lt;url&gt;</code> — get pinged if the oracle disputes or resolves\n"
+    "• <code>/watching</code> — list what you're watching\n"
+    "• <code>/unwatch</code> — stop all alerts\n"
+    "• <code>/clear</code> — delete my messages in this chat\n\n"
     "Grounded in the rules, not the headline."
 )
 
@@ -71,9 +76,27 @@ def format_verdict(r: VerifyResponse, base_url: str = "https://betauditmcp.xyz")
     return "\n".join(lines)
 
 
-async def send_message(chat_id: int | str, text: str, token: str) -> None:
+_SEVERITY_EMOJI = {"high": "🔴", "medium": "🟠", "low": "⚪"}
+
+
+def format_alert(sub, event) -> str:
+    """A dispute/state-change alert for a watched market."""
+    emoji = _SEVERITY_EMOJI.get(event.severity, "🚨")
+    return "\n".join(
+        [
+            f"{emoji} <b>Oracle alert</b> — a market you're watching changed.",
+            "",
+            f"<b>{event.old_state} → {event.new_state}</b>",
+            _esc(event.message),
+            f"<a href=\"{_esc(sub.market_url)}\">view market</a>",
+        ]
+    )
+
+
+async def send_message(chat_id: int | str, text: str, token: str) -> int | None:
+    """Send a message; returns the Telegram message_id (for later deletion)."""
     async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
-        await client.post(
+        r = await client.post(
             f"{_API}/bot{token}/sendMessage",
             json={
                 "chat_id": chat_id,
@@ -82,6 +105,22 @@ async def send_message(chat_id: int | str, text: str, token: str) -> None:
                 "disable_web_page_preview": True,
             },
         )
+    try:
+        return r.json()["result"]["message_id"]
+    except Exception:  # noqa: BLE001
+        return None
+
+
+async def delete_message(chat_id: int | str, message_id: int, token: str) -> bool:
+    try:
+        async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
+            r = await client.post(
+                f"{_API}/bot{token}/deleteMessage",
+                json={"chat_id": chat_id, "message_id": message_id},
+            )
+        return bool(r.json().get("ok"))
+    except Exception:  # noqa: BLE001
+        return False
 
 
 async def send_chat_action(chat_id: int | str, action: str, token: str) -> None:

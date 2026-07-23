@@ -91,6 +91,32 @@ async def incr_with_expiry(key: str, ttl: int) -> int | None:
         return None
 
 
+async def list_push(key: str, value: Any, cap: int = 60, ttl: int = 86400) -> None:
+    """Append to a capped list (keeps the last ``cap`` items). No-op without Redis."""
+    client = get_client()
+    if client is None:
+        return
+    try:
+        await client.rpush(key, value)
+        await client.ltrim(key, -cap, -1)
+        await client.expire(key, ttl)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+async def list_pop_all(key: str) -> list[str]:
+    """Return all list items and delete the key. Empty without Redis."""
+    client = get_client()
+    if client is None:
+        return []
+    try:
+        vals = await client.lrange(key, 0, -1)
+        await client.delete(key)
+        return [v if isinstance(v, str) else v.decode() for v in vals]
+    except Exception:  # noqa: BLE001
+        return []
+
+
 async def publish(channel: str, message: Any) -> None:
     client = get_client()
     if client is None:
