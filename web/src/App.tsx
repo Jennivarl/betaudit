@@ -1305,7 +1305,7 @@ function Footer() {
             letterSpacing: '0.05em',
           }}
         >
-          // betaudit.onrender.com :: Pre-Trade Resolution Auditor
+          // betauditmcp.xyz :: Pre-Trade Resolution Auditor
         </div>
 
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center' }}>

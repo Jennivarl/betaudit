@@ -112,11 +112,11 @@
   <h2><span class="n">01</span>Quickstart</h2>
   <p>Two calls: mint a demo key, then verify a market. The demo key route is public and rate-limited.</p>
   <pre><span class="c"># 1. mint a demo API key</span>
-curl -X POST https://betaudit.onrender.com/demo/key
+curl -X POST https://betauditmcp.xyz/demo/key
 <span class="c"># -> { "api_key": "rl_live_...", ... }  (shown once)</span>
 
 <span class="c"># 2. verify a market</span>
-curl -X POST https://betaudit.onrender.com/verify-resolution-rules \
+curl -X POST https://betauditmcp.xyz/verify-resolution-rules \
   -H <span class="s">"X-API-Key: rl_live_..."</span> \
   -H <span class="s">"content-type: application/json"</span> \
   -d <span class="s">'{"market_url":"https://polymarket.com/market/&lt;slug&gt;","queried_side":"YES"}'</span></pre>
@@ -175,11 +175,11 @@ curl -X POST https://betaudit.onrender.com/verify-resolution-rules \
     <code>verify_resolution_rules</code>, backed by the same engine as the REST API.
   </p>
   <pre><span class="c"># list tools</span>
-curl -X POST https://betaudit.onrender.com/mcp -H <span class="s">"content-type: application/json"</span> \
+curl -X POST https://betauditmcp.xyz/mcp -H <span class="s">"content-type: application/json"</span> \
   -d <span class="s">'{"jsonrpc":"2.0","id":1,"method":"tools/list"}'</span>
 
 <span class="c"># call the tool</span>
-curl -X POST https://betaudit.onrender.com/mcp -H <span class="s">"content-type: application/json"</span> \
+curl -X POST https://betauditmcp.xyz/mcp -H <span class="s">"content-type: application/json"</span> \
   -d <span class="s">'{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{
        "name":"verify_resolution_rules",
        "arguments":{"market_url":"https://polymarket.com/market/&lt;slug&gt;","queried_side":"YES"}}}'</span></pre>

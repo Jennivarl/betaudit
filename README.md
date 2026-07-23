@@ -11,10 +11,10 @@ give it a market URL → it reads the actual resolution criteria, UMA oracle sta
 → it returns a **0–100 resolution risk score** and a verdict an agent acts on:
 **`PROCEED` / `CAUTION` / `ABORT_TRADE`**. Grounded in the rules, not the headline.
 
-**Live:** [betaudit.onrender.com](https://betaudit.onrender.com) · **Docs:** [/docs](https://betaudit.onrender.com/docs/) · **API:** [/api-docs](https://betaudit.onrender.com/api-docs) · **OKX:** A2MCP Agent #6141
+**Live:** [betauditmcp.xyz](https://betauditmcp.xyz) · **Docs:** [/docs](https://betauditmcp.xyz/docs/) · **API:** [/api-docs](https://betauditmcp.xyz/api-docs) · **OKX:** A2MCP Agent #6141
 
 ### 30-second tour
-- **Try it** — open the [live console](https://betaudit.onrender.com), click the example, watch a real market get audited.
+- **Try it** — open the [live console](https://betauditmcp.xyz), click the example, watch a real market get audited.
 - **Two ways to call it** — REST (`POST /verify-resolution-rules`) for apps, MCP (`POST /mcp`, tool `verify_resolution_rules`) for OKX agents. Same engine.
 - **How the score is built** — resolve real rules (Polymarket Gamma) → LLM audits the clauses (grounded, temp 0) → explainable 0–100 score; degrades to a deterministic rubric with no LLM key.
 - **Production-grade** — API-key auth + per-call audit + metering, Redis caching/rate-limiting/live-feed, optional x402 pay-per-call, and a post-trade oracle monitor that fires dispute alerts.

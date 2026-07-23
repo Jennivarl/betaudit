@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Ping BetAudit /health
         run: |
-          url="https://betaudit.onrender.com/health"
+          url="https://betauditmcp.xyz/health"
           for i in 1 2 3; do
             code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "$url" || echo "000")
             echo "attempt $i -> HTTP $code"
