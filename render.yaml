@@ -1,0 +1,50 @@
+# Render Blueprint — BetAudit ASP (web + Postgres + Redis/Key-Value).
+# Deploy: push to GitHub, then Render > New > Blueprint, point at this repo.
+# Set OPENAI_API_KEY in the dashboard (marked sync:false below).
+
+services:
+  - type: web
+    name: betaudit
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: APP_ENV
+        value: prod
+      # Locks POST /admin/keys in prod. The web console mints via the public,
+      # IP-throttled /demo/key instead, so it keeps working.
+      - key: ADMIN_TOKEN
+        generateValue: true
+      # Set this in the Render dashboard (kept out of git).
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        value: gpt-4o
+      - key: MONITOR_ENABLED
+        value: "true"
+      - key: X402_ENABLED
+        value: "false"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "60"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: betaudit-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: betaudit-redis
+          property: connectionString
+
+  - type: keyvalue
+    name: betaudit-redis
+    plan: free
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []   # internal-only access
+
+databases:
+  - name: betaudit-db
+    plan: free
+    postgresMajorVersion: "16"

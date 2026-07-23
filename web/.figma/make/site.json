@@ -1,0 +1,11 @@
+{
+  "title": "BetAudit — Pre-Trade Simulation Layer",
+  "description": "BetAudit: an AI-native pre-trade resolution auditor for autonomous prediction-market agents on the OKX AI Marketplace. Stress-test a market's real resolution rules before committing capital.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

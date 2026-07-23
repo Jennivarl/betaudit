@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+
+# Node / build artifacts (rebuilt inside the image)
+web/node_modules/
+web/dist/
+node_modules/
+
+# Local data / secrets
+*.db
+*.sqlite3
+.env
+.env.*
+!.env.example
+
+# Repo noise
+.git/
+tests/
+examples/
+*.md
+!README.md

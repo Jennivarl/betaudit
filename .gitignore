@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Test / cache
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# DB
+*.db
+*.sqlite3
+
+# Node / web app (web/)
+node_modules/
+web/dist/
+.vite/
+
+# Agent tooling / local settings (not part of the product)
+.agents/
+.claude/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log

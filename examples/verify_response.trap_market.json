@@ -1,0 +1,54 @@
+{
+  "market_id": "0x1234...5678",
+  "resolution_risk_score": 90,
+  "action": "ABORT_TRADE",
+  "parsed_contract_data": {
+    "oracle_type": "UMA_OOv2",
+    "challenge_window_hours": 2,
+    "source_of_truth_specified": "Official SEC 8-K Filing",
+    "current_oracle_state": "UNDISPUTED"
+  },
+  "rule_mismatches_detected": [
+    {
+      "clause": "This market resolves YES only upon an Official SEC 8-K Filing confirming the release by May 31. Media reports do not qualify.",
+      "trader_thesis": "News/media reporting the event occurred.",
+      "conflict_reason": "Reports do not satisfy the required 'Official SEC 8-K Filing'. Payout may resolve against a headline-based YES."
+    }
+  ],
+  "market_url": "https://polymarket.com/event/company-x-releases-product-y",
+  "platform": "polymarket",
+  "queried_side": "YES",
+  "confidence": 0.9,
+  "score_breakdown": [
+    {
+      "factor": "source_of_truth_mismatch",
+      "weight": 55,
+      "detail": "Resolution requires 'Official SEC 8-K Filing'; press/media reports do not satisfy it."
+    },
+    {
+      "factor": "tight_challenge_window",
+      "weight": 20,
+      "detail": "Challenge window is only 2h."
+    },
+    {
+      "factor": "oracle_state_advanced",
+      "weight": 15,
+      "detail": "Oracle state is UNDISPUTED."
+    }
+  ],
+  "summary": "ABORT_TRADE: resolution hinges on 'Official SEC 8-K Filing', not the headline.",
+  "citations": [
+    {
+      "label": "Polymarket resolution criteria",
+      "snippet": "Resolves YES only upon an Official SEC 8-K Filing by May 31.",
+      "url": "https://polymarket.com/event/company-x-releases-product-y"
+    }
+  ],
+  "monitor": {
+    "subscribed": true,
+    "monitor_id": "mon_examplefixed"
+  },
+  "request_id": "req_examplefixed00",
+  "checked_at": "2026-07-23T00:00:00Z",
+  "schema_version": "1.0.0"
+}
