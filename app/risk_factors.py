@@ -14,29 +14,29 @@ from __future__ import annotations
 # code -> (weight, human-readable reason shown in the score breakdown)
 CONTENT_FACTORS: dict[str, tuple[int, str]] = {
     "requires_official_source": (
-        18,
+        22,
         "Resolves only from a specific official source (a filing, a government "
         "site, a court, a named agency) that a headline may not satisfy.",
     ),
     "requires_multiple_sources": (
-        15,
+        22,
         "Needs several named sources to all agree before it resolves.",
     ),
     "subjective_or_consensus": (
-        20,
+        25,
         "Resolution hinges on subjective judgment or a vague 'consensus of "
         "credible reporting' with no clear bright line — dispute-prone.",
     ),
     "strict_deadline": (
-        12,
+        15,
         "There is a hard deadline; being late flips the outcome.",
     ),
     "exact_entity_match": (
-        12,
+        15,
         "Must be one exact entity, bill, number, or threshold — not a close variant.",
     ),
     "conditional_resolution": (
-        10,
+        12,
         "Multi-step or conditional resolution with fallbacks the headline ignores.",
     ),
 }

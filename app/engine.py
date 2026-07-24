@@ -46,12 +46,12 @@ def _action_for(score: int) -> Action:
 _STATE_COMPONENT = {
     OracleState.DISPUTED: (
         "oracle_disputed",
-        25,
+        30,
         "The oracle proposal is under active dispute right now.",
     ),
     OracleState.UNDISPUTED: (
         "oracle_finalizing",
-        20,
+        22,
         "A proposal is past its challenge window and about to finalize.",
     ),
     OracleState.PROPOSED: (
@@ -69,7 +69,7 @@ def _structural_components(market: ResolvedMarket) -> list[ScoreComponent]:
         components.append(
             ScoreComponent(
                 factor="tight_challenge_window",
-                weight=10,
+                weight=8,
                 detail=f"Only a {market.challenge_window_hours}h window to dispute a wrong resolution.",
             )
         )
