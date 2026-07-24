@@ -96,7 +96,7 @@ def _eval_key(model: str, market: ResolvedMarket, queried_side: Optional[str]) -
 def _analysis_to_dict(a: ClauseAnalysis) -> dict:
     return {
         "source_of_truth": a.source_of_truth,
-        "risk_score": a.risk_score,
+        "risk_factors": a.risk_factors,
         "confidence": a.confidence,
         "reasoning": a.reasoning,
         "mismatches": [
@@ -109,7 +109,7 @@ def _analysis_to_dict(a: ClauseAnalysis) -> dict:
 def _analysis_from_dict(d: dict) -> ClauseAnalysis:
     return ClauseAnalysis(
         source_of_truth=d.get("source_of_truth"),
-        risk_score=int(d.get("risk_score", 0)),
+        risk_factors=list(d.get("risk_factors") or []),
         confidence=float(d.get("confidence", 0.5)),
         reasoning=d.get("reasoning", ""),
         mismatches=[

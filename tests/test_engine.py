@@ -8,7 +8,7 @@ from app.schemas import Action, RuleMismatch
 def test_llm_mode_drives_abort(trap_market):
     analysis = ClauseAnalysis(
         source_of_truth="Official SEC 8-K Filing",
-        risk_score=88,
+        risk_factors=["requires_official_source", "strict_deadline", "exact_entity_match"],
         confidence=0.92,
         reasoning="Rules require an SEC 8-K filing.",
         mismatches=[
@@ -25,9 +25,12 @@ def test_llm_mode_drives_abort(trap_market):
     assert resp.confidence == 0.92
     assert resp.parsed_contract_data.source_of_truth_specified == "Official SEC 8-K Filing"
     assert resp.rule_mismatches_detected
-    # Score must remain explainable: LLM content component + structural.
+    # Score must be explainable: each factor is a labeled component.
     factors = {c.factor for c in resp.score_breakdown}
-    assert "llm_resolution_analysis" in factors
+    assert "requires_official_source" in factors
+    # Deterministic: identical analysis -> identical score.
+    again = score_market(trap_market, analysis=analysis, queried_side="YES")
+    assert again.resolution_risk_score == resp.resolution_risk_score
 
 
 def test_deterministic_fallback_uses_metadata(trap_market):

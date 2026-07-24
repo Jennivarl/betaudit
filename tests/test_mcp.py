@@ -7,7 +7,7 @@ from tests.conftest import TRAP_URL, FakeOpenAI
 
 TRAP_PAYLOAD = {
     "source_of_truth": "Official SEC 8-K Filing",
-    "risk_score": 88,
+    "risk_factors": ["requires_official_source", "strict_deadline", "exact_entity_match"],
     "confidence": 0.92,
     "reasoning": "Rules require an SEC 8-K filing.",
     "mismatches": [

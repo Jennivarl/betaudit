@@ -17,6 +17,7 @@ from typing import Optional
 
 from app.llm.parser import ClauseAnalysis
 from app.resolvers.base import ResolvedMarket
+from app.risk_factors import CONTENT_FACTORS
 from app.schemas import (
     Action,
     Citation,
@@ -41,25 +42,41 @@ def _action_for(score: int) -> Action:
     return Action.PROCEED
 
 
+# Deterministic oracle-state signals (code, weight, reason).
+_STATE_COMPONENT = {
+    OracleState.DISPUTED: (
+        "oracle_disputed",
+        25,
+        "The oracle proposal is under active dispute right now.",
+    ),
+    OracleState.UNDISPUTED: (
+        "oracle_finalizing",
+        20,
+        "A proposal is past its challenge window and about to finalize.",
+    ),
+    OracleState.PROPOSED: (
+        "oracle_proposed",
+        15,
+        "An outcome has been proposed; the challenge window is open.",
+    ),
+}
+
+
 def _structural_components(market: ResolvedMarket) -> list[ScoreComponent]:
-    """Auditable signals from oracle metadata, independent of the LLM."""
+    """Auditable signals from oracle metadata, independent of the LLM. Fully deterministic."""
     components: list[ScoreComponent] = []
     if market.challenge_window_hours is not None and market.challenge_window_hours <= 4:
         components.append(
             ScoreComponent(
                 factor="tight_challenge_window",
-                weight=15,
-                detail=f"Challenge window is only {market.challenge_window_hours}h.",
+                weight=10,
+                detail=f"Only a {market.challenge_window_hours}h window to dispute a wrong resolution.",
             )
         )
-    if market.current_oracle_state in (OracleState.PROPOSED, OracleState.UNDISPUTED):
-        components.append(
-            ScoreComponent(
-                factor="oracle_state_advanced",
-                weight=15,
-                detail=f"Oracle state is {market.current_oracle_state.value}.",
-            )
-        )
+    state = _STATE_COMPONENT.get(market.current_oracle_state)
+    if state:
+        factor, weight, detail = state
+        components.append(ScoreComponent(factor=factor, weight=weight, detail=detail))
     return components
 
 
@@ -125,22 +142,32 @@ def score_market(
 def _score_with_llm(
     market: ResolvedMarket, analysis: ClauseAnalysis
 ) -> tuple[list[ScoreComponent], list[RuleMismatch], Optional[str], float]:
-    """The LLM's grounded per-market judgment drives content risk (so markets
-    genuinely differ); structural oracle facts add to it. The LLM call is seeded
-    (temperature 0 + fixed seed) so the same market returns the same judgment,
-    and identical checks are cached — stable without being flat."""
+    """Deterministic, factor-based scoring.
+
+    The LLM *classifies* named risk factors from a fixed vocabulary; the engine
+    assigns each a fixed weight and sums them, then adds deterministic oracle
+    signals. Same factors + same oracle facts => same score, and every point is
+    traceable to a labeled reason. No opaque 0-100 from the model."""
     source_of_truth = analysis.source_of_truth or market.source_of_truth_specified
 
-    components: list[ScoreComponent] = [
-        ScoreComponent(
-            factor="llm_resolution_analysis",
-            # Round to the nearest 5 to absorb tiny run-to-run jitter while
-            # preserving real differences between markets.
-            weight=round(analysis.risk_score * 0.7 / 5) * 5,
-            detail=analysis.reasoning or "Grounded reading of the resolution rules.",
+    content: list[ScoreComponent] = []
+    for code in analysis.risk_factors:
+        wd = CONTENT_FACTORS.get(code)
+        if wd is not None:
+            weight, detail = wd
+            content.append(ScoreComponent(factor=code, weight=weight, detail=detail))
+
+    # A market with concrete mismatches but no classified factor still registers.
+    if not content and analysis.mismatches:
+        content.append(
+            ScoreComponent(
+                factor="rule_mismatch",
+                weight=15,
+                detail="The rules diverge from the naive headline reading.",
+            )
         )
-    ]
-    components.extend(_structural_components(market))
+
+    components = content + _structural_components(market)
     return components, analysis.mismatches, source_of_truth, analysis.confidence
 
 

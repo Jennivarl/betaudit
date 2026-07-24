@@ -20,6 +20,7 @@ from typing import Any, Optional
 
 from app.config import get_settings
 from app.resolvers.base import ResolvedMarket
+from app.risk_factors import FACTOR_CODES, factor_schema_description
 from app.schemas import RuleMismatch
 
 _TOOL_NAME = "report_resolution_analysis"
@@ -33,13 +34,10 @@ _PARAMETERS: dict[str, Any] = {
             "description": "The authoritative source the rules REQUIRE for "
             "resolution (e.g. 'Official SEC 8-K Filing'), or null if none is named.",
         },
-        "risk_score": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 100,
-            "description": "How likely a naive headline-based trade on the queried "
-            "side is trapped or misresolves. 0 = rules match the obvious reading, "
-            "100 = the rules almost certainly betray a headline trader.",
+        "risk_factors": {
+            "type": "array",
+            "items": {"type": "string", "enum": FACTOR_CODES},
+            "description": factor_schema_description(),
         },
         "confidence": {
             "type": "number",
@@ -67,7 +65,7 @@ _PARAMETERS: dict[str, Any] = {
             },
         },
     },
-    "required": ["risk_score", "confidence", "mismatches"],
+    "required": ["risk_factors", "confidence", "mismatches"],
 }
 
 _TOOL_SPEC: dict[str, Any] = {
@@ -89,10 +87,11 @@ _SYSTEM = (
     "1. Ground every statement strictly in the provided resolution text. Never invent "
     "clauses, sources, dates, or facts.\n"
     "2. Focus on the specific queried side. A trap is a condition that must be met for "
-    "that side to win which a headline reader would overlook (e.g. a required official "
-    "source, an exact deadline, a specific defining authority).\n"
-    "3. If the rules plainly match the obvious reading, return an empty mismatch list and "
-    "a low score. Do not manufacture risk.\n"
+    "that side to win which a headline reader would overlook.\n"
+    "3. Classify the risk_factors that GENUINELY apply, choosing only from the allowed "
+    "list. Select every one that fits, and none that do not. If the rules plainly match "
+    "the obvious reading, return an empty risk_factors list and empty mismatches. Do not "
+    "manufacture risk.\n"
     "4. Report only through the report_resolution_analysis function."
 )
 
@@ -102,7 +101,7 @@ class ClauseAnalysis:
     """Structured output of the parser."""
 
     source_of_truth: Optional[str]
-    risk_score: int
+    risk_factors: list[str]
     confidence: float
     reasoning: str
     mismatches: list[RuleMismatch] = field(default_factory=list)
@@ -209,13 +208,13 @@ def _to_analysis(payload: dict) -> ClauseAnalysis:
         for mm in raw_mismatches
         if mm.get("clause")
     ]
-    score = int(payload.get("risk_score", 0))
-    score = max(0, min(100, score))
+    raw_factors = payload.get("risk_factors") or []
+    factors = [f for f in raw_factors if f in FACTOR_CODES]  # validate against vocabulary
     confidence = float(payload.get("confidence", 0.5))
     confidence = max(0.0, min(1.0, confidence))
     return ClauseAnalysis(
         source_of_truth=(payload.get("source_of_truth") or None),
-        risk_score=score,
+        risk_factors=factors,
         confidence=confidence,
         reasoning=str(payload.get("reasoning", "")).strip(),
         mismatches=mismatches,

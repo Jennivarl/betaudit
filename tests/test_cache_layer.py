@@ -7,7 +7,7 @@ from tests.conftest import TRAP_URL, FakeOpenAI
 
 TRAP_PAYLOAD = {
     "source_of_truth": "Official SEC 8-K Filing",
-    "risk_score": 88,
+    "risk_factors": ["requires_official_source", "strict_deadline"],
     "confidence": 0.92,
     "reasoning": "Rules require an SEC 8-K filing.",
     "mismatches": [
@@ -70,7 +70,7 @@ async def test_eval_cache_hit_skips_llm(fake_redis, trap_market):
 
     assert calls["n"] == 1
     assert a1 is not None and a2 is not None
-    assert a2.risk_score == 88
+    assert a2.risk_factors == ["requires_official_source", "strict_deadline"]
     assert a2.source_of_truth == "Official SEC 8-K Filing"
     assert a2.mismatches[0].clause  # rehydrated
 

@@ -26,10 +26,9 @@ async def test_llm_flags_the_sec_trap(trap_market):
 
     analysis = await parser.parse(trap_market, queried_side="YES")
     assert analysis is not None
-    assert 0 <= analysis.risk_score <= 100
-    # The trap is unambiguous — a grounded reading should score it risky and
-    # surface at least one concrete mismatch.
-    assert analysis.risk_score >= 50, f"expected a risky score, got {analysis.risk_score}"
+    # The trap is unambiguous — a grounded reading should classify at least one
+    # real risk factor and surface at least one concrete mismatch.
+    assert analysis.risk_factors, f"expected risk factors, got {analysis.risk_factors}"
     assert analysis.mismatches, "expected at least one rule mismatch"
-    print(f"\nlive LLM -> score={analysis.risk_score} conf={analysis.confidence} "
+    print(f"\nlive LLM -> factors={analysis.risk_factors} conf={analysis.confidence} "
           f"source={analysis.source_of_truth!r} reasoning={analysis.reasoning!r}")
