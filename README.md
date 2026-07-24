@@ -1,15 +1,28 @@
 # BetAudit — Pre-Trade Resolution Auditor
 
-> **A prediction-market bot is about to buy `YES` on a headline. BetAudit reads the market's
-> _real_ resolution rules first — and tells it to stop when a hidden clause would trap the trade.**
+> **AI agents bet on the headline. Prediction markets pay out on the fine print.
+> BetAudit reads the fine print first — and tells the agent to stop before it gets trapped.**
 
-Autonomous agents trade prediction markets on the headline. But a Polymarket market resolves on its
-**fine print** — an "Official SEC 8-K filing," an exact deadline, a specific oracle — not the news.
-BetAudit is a machine-to-machine ASP on the **OKX AI Marketplace** that closes that gap:
+## The problem, in one real market
 
-give it a market URL → it reads the actual resolution criteria, UMA oracle state, and dispute terms
-→ it returns a **0–100 resolution risk score** and a verdict an agent acts on:
-**`PROCEED` / `CAUTION` / `ABORT_TRADE`**. Grounded in the rules, not the headline.
+Take a live one: **"Will LeBron James win the 2028 US Presidential Election?"**
+
+A bot sees a headline and buys **YES**. But the market's actual rules say it only resolves once
+**Associated Press, Fox News, _and_ NBC all call the race for the same person** — all three. And if
+they don't agree, it comes down to who actually gets inaugurated. One headline is not enough.
+
+The bot never read that clause. **BetAudit does** — and flags it: `CAUTION`, risk `64/100`.
+
+## What it does
+
+Give it a market link, and BetAudit:
+
+1. reads the market's **real resolution rules** (live, from Polymarket),
+2. has an AI check the fine print for traps a headline-reader would miss,
+3. returns a **0–100 risk score** and a clear verdict — **`PROCEED` / `CAUTION` / `ABORT_TRADE`**.
+
+So an autonomous agent can skip the trapped trade *before it spends a dollar*. It's a
+machine-to-machine service on the **OKX AI Marketplace** — agents call it, humans can use it too.
 
 **Live:** [betauditmcp.xyz](https://betauditmcp.xyz) · **Docs:** [/docs](https://betauditmcp.xyz/docs/) · **API:** [/api-docs](https://betauditmcp.xyz/api-docs) · **OKX:** A2MCP Agent #6141
 
