@@ -41,7 +41,6 @@ PROMPT = (
 )
 
 _ACTION_EMOJI = {"ABORT_TRADE": "🔴", "CAUTION": "🟠", "PROCEED": "🟢"}
-_ACTION_WORD = {"ABORT_TRADE": "ABORT_TRADE", "CAUTION": "CAUTION", "PROCEED": "PROCEED"}
 
 
 def extract_market_url(text: str) -> str | None:
@@ -57,22 +56,27 @@ def format_verdict(r: VerifyResponse, base_url: str = "https://betauditmcp.xyz")
     action = r.action.value
     emoji = _ACTION_EMOJI.get(action, "⚪")
     pc = r.parsed_contract_data
+    title = (r.market_question or "").strip() or f"{pc.oracle_type} market"
+
     lines = [
-        f"{emoji} <b>{_ACTION_WORD.get(action, action)}</b> — risk <b>{r.resolution_risk_score}/100</b>",
+        f"{emoji} <b>{action}</b> — risk <b>{r.resolution_risk_score}/100</b>",
         "",
-        f"<b>Market:</b> <a href=\"{_esc(r.market_url)}\">{_esc(pc.oracle_type)} market</a>",
-        f"<b>Oracle:</b> {_esc(pc.oracle_type)} · state {pc.current_oracle_state.value}"
-        + (f" · window {pc.challenge_window_hours}h" if pc.challenge_window_hours is not None else ""),
+        f"<b>Market:</b> <a href=\"{_esc(r.market_url)}\">{_esc(title)}</a>",
+        f"<b>Oracle:</b> {_esc(pc.oracle_type)} · {pc.current_oracle_state.value}"
+        + (f" · {pc.challenge_window_hours}h dispute window" if pc.challenge_window_hours is not None else ""),
     ]
     if pc.source_of_truth_specified:
-        lines.append(f"<b>Source of truth:</b> {_esc(pc.source_of_truth_specified)}")
+        lines += [
+            "",
+            f"📍 <b>What decides it:</b> {_esc(pc.source_of_truth_specified)}",
+            "The market resolves from this exact source — not from news headlines "
+            "or social media. The outcome depends on what it says.",
+        ]
     if r.rule_mismatches_detected:
-        lines.append("")
-        lines.append("<b>Why:</b>")
+        lines += ["", "<b>Why it's risky:</b>"]
         for m in r.rule_mismatches_detected[:4]:
             lines.append(f"• {_esc(m.conflict_reason)}")
-    lines.append("")
-    lines.append(f"<i>confidence {r.confidence:.2f} · {base_url.replace('https://', '')}</i>")
+    lines += ["", f"<i>confidence {r.confidence:.2f} · {base_url.replace('https://', '')}</i>"]
     return "\n".join(lines)
 
 

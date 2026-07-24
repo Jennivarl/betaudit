@@ -144,6 +144,9 @@ class VerifyResponse(BaseModel):
     market_url: str
     platform: Platform
     queried_side: Optional[str] = None
+    market_question: Optional[str] = Field(
+        default=None, description="The market's question text, for display."
+    )
 
     # --- explainability ---
     confidence: float = Field(..., ge=0.0, le=1.0, description="Model/heuristic confidence.")

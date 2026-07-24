@@ -112,6 +112,7 @@ def score_market(
         market_url=market.market_url,
         platform=market.platform,
         queried_side=queried_side,
+        market_question=market.question,
         confidence=confidence,
         score_breakdown=components,
         summary=summary,
