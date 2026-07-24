@@ -14,6 +14,12 @@ r = PolymarketResolver()
         ("https://polymarket.com/event/company-x-releases-product-y", "company-x-releases-product-y"),
         ("https://polymarket.com/market/some-market-slug", "some-market-slug"),
         ("https://polymarket.com/some-slug", "some-slug"),
+        # /event/<event>/<market> -> the specific market (last segment), not the event
+        (
+            "https://polymarket.com/event/presidential-election-winner-2028/will-lebron-james-win",
+            "will-lebron-james-win",
+        ),
+        ("https://polymarket.com/market/some-market-slug/", "some-market-slug"),  # trailing slash
     ],
 )
 def test_slug_from_url(url, expected):

@@ -46,12 +46,12 @@ class PolymarketResolver(MarketResolver):
 
     @staticmethod
     def _slug_from_url(url: str) -> str:
-        # /event/<slug>, /market/<slug>, or /<slug>
+        # Use the LAST path segment — the most specific slug. Handles
+        # /market/<slug>, /<slug>, and /event/<event>/<market> (picks <market>).
+        # A bare /event/<slug> falls back to event lookup in _fetch_market.
         parts = [p for p in urlparse(url).path.split("/") if p]
         if not parts:
             raise ResolverError(f"No market slug in URL: {url}")
-        if parts[0] in ("event", "market") and len(parts) >= 2:
-            return parts[1]
         return parts[-1]
 
     # -- fetch ---------------------------------------------------------------
