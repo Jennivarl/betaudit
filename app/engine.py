@@ -122,22 +122,49 @@ def score_market(
     )
 
 
+# Deterministic content weights. The LLM finds the traps (source of truth +
+# mismatches); the SCORE is a fixed function of those findings + structural
+# oracle facts, so the same market always yields the same number.
+_CONTENT_TRAP = 45   # a named source of truth AND concrete rule mismatches
+_CONTENT_SOME = 30   # only one of the two present
+
+
 def _score_with_llm(
     market: ResolvedMarket, analysis: ClauseAnalysis
 ) -> tuple[list[ScoreComponent], list[RuleMismatch], Optional[str], float]:
-    """LLM's grounded reading drives content risk; structural metadata adds to it."""
-    source_of_truth = analysis.source_of_truth or market.source_of_truth_specified
+    """Deterministic scoring from the LLM's findings (not its raw 0-100 number).
 
-    components: list[ScoreComponent] = [
-        ScoreComponent(
-            factor="llm_resolution_analysis",
-            # LLM judgment dominates but is capped so structural signals still matter.
-            weight=round(analysis.risk_score * 0.7),
-            detail=analysis.reasoning or "Grounded reading of the resolution rules.",
+    Same findings + same oracle facts => same score, every time."""
+    source_of_truth = analysis.source_of_truth or market.source_of_truth_specified
+    mismatches = analysis.mismatches
+    components: list[ScoreComponent] = []
+
+    if source_of_truth and mismatches:
+        components.append(
+            ScoreComponent(
+                factor="resolution_trap",
+                weight=_CONTENT_TRAP,
+                detail=(
+                    f"Resolves from '{source_of_truth}', with clauses a headline "
+                    "reader would miss."
+                ),
+            )
         )
-    ]
+    elif source_of_truth or mismatches:
+        components.append(
+            ScoreComponent(
+                factor="resolution_divergence",
+                weight=_CONTENT_SOME,
+                detail=(
+                    f"Resolves from '{source_of_truth}', which a headline may not satisfy."
+                    if source_of_truth
+                    else "The rules diverge from the naive headline reading."
+                ),
+            )
+        )
+
     components.extend(_structural_components(market))
-    return components, analysis.mismatches, source_of_truth, analysis.confidence
+    return components, mismatches, source_of_truth, analysis.confidence
 
 
 def _score_deterministic(

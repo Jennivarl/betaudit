@@ -149,6 +149,7 @@ class ClauseParser:
             model=self._model,
             max_tokens=1200,
             temperature=0,
+            seed=7,  # steadies the findings run-to-run (best-effort determinism)
             tools=[_TOOL_SPEC],
             tool_choice={"type": "function", "function": {"name": _TOOL_NAME}},
             messages=[

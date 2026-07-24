@@ -25,9 +25,9 @@ def test_llm_mode_drives_abort(trap_market):
     assert resp.confidence == 0.92
     assert resp.parsed_contract_data.source_of_truth_specified == "Official SEC 8-K Filing"
     assert resp.rule_mismatches_detected
-    # Score must remain explainable: LLM component + structural components.
+    # Score must remain explainable and deterministic from the findings.
     factors = {c.factor for c in resp.score_breakdown}
-    assert "llm_resolution_analysis" in factors
+    assert "resolution_trap" in factors
 
 
 def test_deterministic_fallback_uses_metadata(trap_market):
